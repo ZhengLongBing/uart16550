@@ -1,0 +1,9 @@
+[package]
+name = "uart16550"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+volatile-register = "0.2.2"
+embedded-io = "0.6.1"
+embedded-hal-nb ="1.0.0"
