@@ -7,7 +7,7 @@ use crate::{
 };
 use embedded_hal_nb::nb;
 use embedded_io::ErrorType;
-use std::ops::Deref;
+use core::ops::Deref;
 
 /// Reads data from UART in a blocking manner.
 ///
