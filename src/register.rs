@@ -825,7 +825,7 @@ mod tests {
     use super::*;
     use core::mem::offset_of;
     #[test]
-    fn struct_block_offset() {
+    fn struct_register_block_offset() {
         assert_eq!(offset_of!(RegisterBlock, rbr_thr_dll), 0x00);
         assert_eq!(offset_of!(RegisterBlock, ier_dlh), 0x04);
         assert_eq!(offset_of!(RegisterBlock, iir_fcr), 0x08);
@@ -837,17 +837,14 @@ mod tests {
     }
     #[test]
     fn struct_rbr_thr_dll_functions() {
-        // 测试接收数据相关函数
-        let mut val = RbrThrDll(0x0);
-
-        // 测试8位接收
-        val = RbrThrDll(0xFF);
+        // Test 8-bit reception
+        let mut val = RbrThrDll(0xFF);
         assert_eq!(val.receiver_data(), 0xFF);
 
         val = RbrThrDll(0xAA);
         assert_eq!(val.receiver_data(), 0xAA);
 
-        // 测试8位发送
+        // Test 8-bit transmission
         val = RbrThrDll(0x0);
         val = val.set_transmitter_data(0xFF);
         assert_eq!(val.0, 0xFF);
@@ -856,7 +853,7 @@ mod tests {
         val = val.set_transmitter_data(0xAA);
         assert_eq!(val.0, 0xAA);
 
-        // 测试波特率除数低字节相关函数
+        // Test divisor latch low byte related functions
         val = RbrThrDll(0x0);
         val = val.set_divisor_latch_low_byte(0xFF);
         assert_eq!(val.0, 0xFF);
@@ -867,7 +864,7 @@ mod tests {
         assert_eq!(val.0, 0xAA);
         assert_eq!(val.divisor_latch_low_byte(), 0xAA);
 
-        // 测试位掩码是否正确保留其他位
+        // Test if bit mask correctly preserves other bits
         val = RbrThrDll(0xFFFF0000);
         val = val.set_transmitter_data(0xFF);
         assert_eq!(val.0, 0xFFFF00FF);
@@ -880,72 +877,72 @@ mod tests {
     fn struct_ier_dlh_functions() {
         let mut val = IerDlh(0x0);
 
-        // 测试启用接收数据中断
+        // Test enabling received data interrupt
         val = val.enable_received_data_available_interrupt();
         assert_eq!(val.0, 0x00000001);
         assert_eq!(val.is_received_data_available_interrupt_enabled(), true);
 
-        // 测试禁用接收数据中断
+        // Test disabling received data interrupt
         val = val.disable_received_data_available_interrupt();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_received_data_available_interrupt_enabled(), false);
 
         let mut val = IerDlh(0x0);
 
-        // 测试启用发送寄存器空中断
+        // Test enabling transmitter empty interrupt
         val = val.enable_transmitter_empty_interrupt();
         assert_eq!(val.0, 0x00000002);
         assert_eq!(val.is_transmitter_empty_interrupt_enabled(), true);
 
-        // 测试禁用发送寄存器空中断
+        // Test disabling transmitter empty interrupt
         val = val.disable_transmitter_empty_interrupt();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_transmitter_empty_interrupt_enabled(), false);
 
         let mut val = IerDlh(0x0);
 
-        // 测试启用接收线路状态中断
+        // Test enabling receiver line status interrupt
         val = val.enable_receiver_line_status_interrupt();
         assert_eq!(val.0, 0x00000004);
         assert_eq!(val.is_receiver_line_status_interrupt_enabled(), true);
 
-        // 测试禁用接收线路状态中断
+        // Test disabling receiver line status interrupt
         val = val.disable_receiver_line_status_interrupt();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_receiver_line_status_interrupt_enabled(), false);
 
         let mut val = IerDlh(0x0);
 
-        // 测试启用调制解调器状态中断
+        // Test enabling modem status interrupt
         val = val.enable_modem_status_interrupt();
         assert_eq!(val.0, 0x00000008);
         assert_eq!(val.is_modem_status_interrupt_enabled(), true);
 
-        // 测试禁用调制解调器状态中断
+        // Test disabling modem status interrupt
         val = val.disable_modem_status_interrupt();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_modem_status_interrupt_enabled(), false);
 
         let mut val = IerDlh(0x0);
 
-        // 测试启用调制解调器状态中断
+        // Test enabling modem status interrupt
         val = val.enable_modem_status_interrupt();
         assert_eq!(val.0, 0x00000008);
         assert_eq!(val.is_modem_status_interrupt_enabled(), true);
 
-        // 测试禁用调制解调器状态中断
+        // Test disabling modem status interrupt
         val = val.disable_modem_status_interrupt();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_modem_status_interrupt_enabled(), false);
 
         let mut val = IerDlh(0x0);
 
-        // 测试设置波特率除数高字节为0x11
+        // Test setting divisor latch high byte to 0x11
         val = val.set_divisor_latch_high_byte(0x11);
         assert_eq!(val.0, 0x00000011);
         assert_eq!(val.divisor_latch_high_byte(), 0x11);
 
-        // 测试设置波特率除数高字节为0xFF
+        // Test setting divisor latch high byte to 0xFF
         val = val.set_divisor_latch_high_byte(0xFF);
         assert_eq!(val.0, 0x000000FF);
         assert_eq!(val.divisor_latch_high_byte(), 0xFF);
@@ -953,10 +950,8 @@ mod tests {
 
     #[test]
     fn struct_iir_fcr_functions() {
-        let mut val = IirFcr(0x0);
-
-        // 测试所有中断ID
-        val = IirFcr(0x00);
+        // Test all interrupt IDs
+        let mut val = IirFcr(0x00);
         assert_eq!(val.interrupt_id(), InterruptId::ModemStatus);
 
         val = IirFcr(0x01);
@@ -974,20 +969,18 @@ mod tests {
         val = IirFcr(0x0C);
         assert_eq!(val.interrupt_id(), InterruptId::CharacterTimeout);
 
-        // 测试无效值应返回 NoInterruptPending
+        // Test invalid value should return NoInterruptPending
         val = IirFcr(0xFF);
         assert_eq!(val.interrupt_id(), InterruptId::NoInterruptPending);
 
-        let mut val = IirFcr(0x0);
-
-        // 测试 FIFO 使能状态检查
-        val = IirFcr(0xC0); // 设置 FIFOSE 为 0x03
+        // Test FIFO enable status check
+        let mut val = IirFcr(0xC0); // Set FIFOSE to 0x03
         assert!(val.is_fifos_enabled());
 
         val = IirFcr(0x00);
         assert!(!val.is_fifos_enabled());
 
-        // 测试 FIFO 使能和禁用
+        // Test FIFO enable and disable
         val = IirFcr(0x0);
         val = val.enable_fifo();
         assert_eq!(val.0 & 0x01, 0x01);
@@ -995,7 +988,7 @@ mod tests {
         val = val.disable_fifo();
         assert_eq!(val.0 & 0x01, 0x00);
 
-        // 测试 FIFO 重置功能
+        // Test FIFO reset functionality
         val = IirFcr(0x0);
         val = val.reset_receiver_fifo();
         assert_eq!(val.0 & 0x02, 0x02);
@@ -1006,16 +999,14 @@ mod tests {
 
         let mut val = IirFcr(0x0);
 
-        // 测试 DMA 模式设置
+        // Test DMA mode setting
         val = val.set_dma_mode(DmaMode::Mode0);
         assert_eq!(val.0 & 0x08, 0x00);
 
         val = val.set_dma_mode(DmaMode::Mode1);
         assert_eq!(val.0 & 0x08, 0x08);
 
-        let mut val = IirFcr(0x0);
-
-        // 测试设置接收器触发级别
+        // Test setting receiver trigger level
         val = IirFcr(0x0);
         val = val.set_receiver_trigger_level(ReceiverTriggerLevel::Char1);
         assert_eq!(val.0 & 0xC0, 0x00);
@@ -1034,41 +1025,41 @@ mod tests {
     fn struct_lcr_functions() {
         let mut val = Lcr(0x0);
 
-        // 测试设置和获取5位数据长度
+        // Test setting and getting 5-bit word length
         val = val.set_word_length(WordLength::Bits5);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.word_length(), WordLength::Bits5);
 
-        // 测试设置和获取6位数据长度
+        // Test setting and getting 6-bit word length
         val = val.set_word_length(WordLength::Bits6);
         assert_eq!(val.0, 0x00000001);
         assert_eq!(val.word_length(), WordLength::Bits6);
 
-        // 测试设置和获取7位数据长度
+        // Test setting and getting 7-bit word length
         val = val.set_word_length(WordLength::Bits7);
         assert_eq!(val.0, 0x00000002);
         assert_eq!(val.word_length(), WordLength::Bits7);
 
-        // 测试设置和获取8位数据长度
+        // Test setting and getting 8-bit word length
         val = val.set_word_length(WordLength::Bits8);
         assert_eq!(val.0, 0x00000003);
         assert_eq!(val.word_length(), WordLength::Bits8);
 
         let mut val = Lcr(0x0);
 
-        // 测试设置和获取1位停止位
+        // Test setting and getting 1 stop bit
         val = val.set_stop_bits(StopBits::Bit1);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.stop_bits(), StopBits::Bit1);
 
-        // 测试设置和获取1.5/2位停止位
+        // Test setting and getting 1.5/2 stop bits
         val = val.set_stop_bits(StopBits::Bits2OrBits1_5);
         assert_eq!(val.0, 0x00000004);
         assert_eq!(val.stop_bits(), StopBits::Bits2OrBits1_5);
 
         let mut val = Lcr(0x0);
 
-        // 测试启用和禁用奇偶校验
+        // Test enabling and disabling parity
         val = val.enable_parity();
         assert_eq!(val.0, 0x00000008);
         assert_eq!(val.is_parity_enabled(), true);
@@ -1077,7 +1068,7 @@ mod tests {
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_parity_enabled(), false);
 
-        // 测试设置和获取奇偶校验类型
+        // Test setting and getting parity type
         val = val.set_parity(Parity::Odd);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.parity(), Parity::Odd);
@@ -1088,7 +1079,7 @@ mod tests {
 
         let mut val = Lcr(0x0);
 
-        // 测试启用和禁用粘滞奇偶校验
+        // Test enabling and disabling stick parity
         val = val.enable_stick_parity();
         assert_eq!(val.0, 0x00000020);
         assert_eq!(val.is_stick_parity_enabled(), true);
@@ -1099,7 +1090,7 @@ mod tests {
 
         let mut val = Lcr(0x0);
 
-        // 测试启用和禁用中断控制
+        // Test enabling and disabling break control
         val = val.enable_break_control();
         assert_eq!(val.0, 0x00000040);
         assert_eq!(val.is_break_control_enabled(), true);
@@ -1110,7 +1101,7 @@ mod tests {
 
         let mut val = Lcr(0x0);
 
-        // 测试启用和禁用除数锁存器访问
+        // Test enabling and disabling divisor latch access
         val = val.enable_divisor_latch_access();
         assert_eq!(val.0, 0x00000080);
         assert_eq!(val.is_divisor_latch_access_enabled(), true);
@@ -1124,60 +1115,60 @@ mod tests {
     fn struct_mcr_functions() {
         let mut val = Mcr(0x0);
 
-        // 测试设置 DTR 为 true
+        // Test setting DTR to true
         val = val.set_data_terminal_ready(true);
         assert_eq!(val.0, 0x00000001);
         assert_eq!(val.data_terminal_ready(), true);
 
-        // 测试设置 DTR 为 false
+        // Test setting DTR to false
         val = val.set_data_terminal_ready(false);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.data_terminal_ready(), false);
 
         let mut val = Mcr(0x0);
 
-        // 测试设置 RTS 为 true
+        // Test setting RTS to true
         val = val.set_request_to_send(true);
         assert_eq!(val.0, 0x00000002);
         assert_eq!(val.request_to_send(), true);
 
-        // 测试设置 RTS 为 false
+        // Test setting RTS to false
         val = val.set_request_to_send(false);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.request_to_send(), false);
 
         let mut val = Mcr(0x0);
 
-        // 测试设置 OUT1 为 true
+        // Test setting OUT1 to true
         val = val.set_out1(true);
         assert_eq!(val.0, 0x00000004);
         assert_eq!(val.out1(), true);
 
-        // 测试设置 OUT1 为 false
+        // Test setting OUT1 to false
         val = val.set_out1(false);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.out1(), false);
 
         let mut val = Mcr(0x0);
 
-        // 测试设置 OUT2 为 true
+        // Test setting OUT2 to true
         val = val.set_out2(true);
         assert_eq!(val.0, 0x00000008);
         assert_eq!(val.out2(), true);
 
-        // 测试设置 OUT2 为 false
+        // Test setting OUT2 to false
         val = val.set_out2(false);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.out2(), false);
 
         let mut val = Mcr(0x0);
 
-        // 测试启用回环模式
+        // Test enabling loop back mode
         val = val.enable_loop_back();
         assert_eq!(val.0, 0x00000010);
         assert_eq!(val.is_loop_back_enabled(), true);
 
-        // 测试禁用回环模式
+        // Test disabling loop back mode
         val = val.disable_loop_back();
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.is_loop_back_enabled(), false);
@@ -1185,73 +1176,57 @@ mod tests {
 
     #[test]
     fn struct_lsr_functions() {
-        let mut val = Lsr(0x0);
-
-        // 测试数据就绪标志位
-        val = Lsr(0x02); // 设置 DR 位
+        // Test data ready flag
+        let mut val = Lsr(0x02); // Set DR bit
         assert_eq!(val.is_data_ready(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_data_ready(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试溢出错误标志位
-        val = Lsr(0x02); // 设置 OE 位
+        // Test overrun error flag
+        let mut val = Lsr(0x02); // Set OE bit
         assert_eq!(val.is_overrun_error(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_overrun_error(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试奇偶校验错误标志位
-        val = Lsr(0x04); // 设置 PE 位
+        // Test parity error flag
+        let mut val = Lsr(0x04); // Set PE bit
         assert_eq!(val.is_parity_error(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_parity_error(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试帧错误标志位
-        val = Lsr(0x08); // 设置 FE 位
+        // Test framing error flag
+        let mut val = Lsr(0x08); // Set FE bit
         assert_eq!(val.is_framing_error(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_framing_error(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试中断标志位
-        val = Lsr(0x10); // 设置 BI 位
+        // Test break interrupt flag
+        let mut val = Lsr(0x10); // Set BI bit
         assert_eq!(val.is_broken(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_broken(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试发送 FIFO 空标志位
-        val = Lsr(0x20); // 设置 THRE 位
+        // Test transmitter FIFO empty flag
+        let mut val = Lsr(0x20); // Set THRE bit
         assert_eq!(val.is_transmitter_fifo_empty(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_transmitter_fifo_empty(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试发送器空标志位
-        val = Lsr(0x40); // 设置 TEMT 位
+        // Test transmitter empty flag
+        let mut val = Lsr(0x40); // Set TEMT bit
         assert_eq!(val.is_transmitter_empty(), true);
 
         val = Lsr(0x0);
         assert_eq!(val.is_transmitter_empty(), false);
 
-        let mut val = Lsr(0x0);
-
-        // 测试接收 FIFO 错误标志位
-        val = Lsr(0x80); // 设置 RFE 位
+        // Test receiver FIFO error flag
+        let mut val = Lsr(0x80); // Set RFE bit
         assert_eq!(val.is_receiver_fifo_error(), true);
 
         val = Lsr(0x0);
@@ -1260,91 +1235,71 @@ mod tests {
 
     #[test]
     fn struct_msr_functions() {
-        let mut val = Msr(0x0);
-
-        // 测试 DCTS 位
-        val = Msr(0x01); // 设置 DCTS 位
+        // Test DCTS bit
+        let mut val = Msr(0x01); // Set DCTS bit
         assert_eq!(val.delta_clear_to_send(), true);
 
         val = Msr(0x0);
         assert_eq!(val.delta_clear_to_send(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 DDSR 位
-        val = Msr(0x02); // 设置 DDSR 位
+        // Test DDSR bit
+        let mut val = Msr(0x02); // Set DDSR bit
         assert_eq!(val.delta_data_set_ready(), true);
 
-        val = Msr(0x0);
+        val = Msr(0x00);
         assert_eq!(val.delta_data_set_ready(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 TERI 位
-        val = Msr(0x04); // 设置 TERI 位
+        // Test TERI bit
+        let mut val = Msr(0x04); // Set TERI bit
         assert_eq!(val.trailing_edge_of_ring_indicator(), true);
 
         val = Msr(0x0);
         assert_eq!(val.trailing_edge_of_ring_indicator(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 DDCD 位
-        val = Msr(0x08); // 设置 DDCD 位
+        // Test DDCD bit
+        let mut val = Msr(0x08); // Set DDCD bit
         assert_eq!(val.delta_data_carrier_detect(), true);
 
         val = Msr(0x0);
         assert_eq!(val.delta_data_carrier_detect(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 CTS 位
-        val = Msr(0x10); // 设置 CTS 位
+        // Test CTS bit
+        let mut val = Msr(0x10); // Set CTS bit
         assert_eq!(val.clear_to_send(), true);
 
         val = Msr(0x0);
         assert_eq!(val.clear_to_send(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 DSR 位
-        val = Msr(0x20); // 设置 DSR 位
+        // Test DSR bit
+        let mut val = Msr(0x20); // Set DSR bit
         assert_eq!(val.data_set_ready(), true);
 
         val = Msr(0x0);
         assert_eq!(val.data_set_ready(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 RI 位
-        val = Msr(0x40); // 设置 RI 位
+        // Test RI bit
+        let mut val = Msr(0x40); // Set RI bit
         assert_eq!(val.ring_indicator(), true);
 
         val = Msr(0x0);
         assert_eq!(val.ring_indicator(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 RI 位
-        val = Msr(0x40); // 设置 RI 位
+        // Test RI bit
+        let mut val = Msr(0x40); // Set RI bit
         assert_eq!(val.ring_indicator(), true);
 
         val = Msr(0x0);
         assert_eq!(val.ring_indicator(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 RI 位
-        val = Msr(0x40); // 设置 RI 位
+        // Test RI bit
+        let mut val = Msr(0x40); // Set RI bit
         assert_eq!(val.ring_indicator(), true);
 
         val = Msr(0x0);
         assert_eq!(val.ring_indicator(), false);
 
-        let mut val = Msr(0x0);
-
-        // 测试 DCD 位
-        val = Msr(0x80); // 设置 DCD 位
+        // Test DCD bit
+        let mut val = Msr(0x80); // Set DCD bit
         assert_eq!(val.data_carrier_detect(), true);
 
         val = Msr(0x0);
@@ -1355,24 +1310,24 @@ mod tests {
     fn struct_scr_functions() {
         let mut val = Scr(0x0);
 
-        // 测试设置和获取临时存储值 0x11
+        // Test setting and getting scratchpad value 0x11
         val = val.set_scratchpad(0x11);
         assert_eq!(val.0, 0x00000011);
         assert_eq!(val.scratchpad(), 0x11);
 
-        // 测试设置和获取临时存储值 0xFF
+        // Test setting and getting scratchpad value 0xFF
         val = Scr(0x0);
         val = val.set_scratchpad(0xFF);
         assert_eq!(val.0, 0x000000FF);
         assert_eq!(val.scratchpad(), 0xFF);
 
-        // 测试设置和获取临时存储值 0x00
+        // Test setting and getting scratchpad value 0x00
         val = Scr(0x0);
         val = val.set_scratchpad(0x00);
         assert_eq!(val.0, 0x00000000);
         assert_eq!(val.scratchpad(), 0x00);
 
-        // 测试设置和获取临时存储值 0xAA
+        // Test setting and getting scratchpad value 0xAA
         val = Scr(0x0);
         val = val.set_scratchpad(0xAA);
         assert_eq!(val.0, 0x000000AA);
