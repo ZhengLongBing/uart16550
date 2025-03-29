@@ -23,7 +23,7 @@ pub struct RegisterBlock {
     /// Modem Status Register.
     pub msr: RO<Msr>,
     /// Scratchpad Register.
-    pub scr: RW<u32>,
+    pub scr: RW<Scr>,
 }
 
 /// RbrThrDll represents a register that can be used as Receive Buffer Register (RBR), Transmit Holding Register (THR), or Divisor Latch LSB (DLL).
