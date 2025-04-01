@@ -4,9 +4,17 @@
 mod blocking;
 mod register;
 
-pub use blocking::BlockingUart;
-pub use register::{DmaMode, InterruptId, Parity, ReceiverTriggerLevel, StopBits, WordLength};
-pub use register::{IerDlh, IirFcr, Lcr, Lsr, Mcr, Msr, RbrThrDll, RegisterBlock, Scr};
+
+
+#[doc(hidden)]
+pub mod prelude {
+    pub use embedded_io::{Read as _, Write as _,ReadReady as _, WriteReady as _};
+    pub use embedded_hal_nb::{serial::Read as _,serial::Write as _ };
+}
+
+
+pub use crate::blocking::BlockingUart;
+pub use crate::register::*;
 
 /// Configuration struct for UART settings.
 ///
@@ -15,7 +23,7 @@ pub use register::{IerDlh, IirFcr, Lcr, Lsr, Mcr, Msr, RbrThrDll, RegisterBlock,
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Config {
     /// The divisor value for baud rate generation.
-    pub divisor: Option<u16>,
+    pub divisor: u16,
     /// The parity checking mode.
     pub parity_mode: ParityMode,
     /// Number of stop bits.
@@ -34,7 +42,7 @@ impl Config {
     /// - 8 bits word length.
     pub fn new() -> Self {
         Self {
-            divisor: None,
+            divisor: 0,
             parity_mode: ParityMode::None,
             stop_bits: StopBits::Bit1,
             word_length: WordLength::Bits8,
@@ -42,23 +50,27 @@ impl Config {
     }
 
     /// Sets the divisor value.
-    pub fn set_divisor(&mut self, divisor: Option<u16>) {
+    pub fn set_divisor(mut self, divisor: u16) -> Self {
         self.divisor = divisor;
+        self
     }
 
     /// Sets the parity mode.
-    pub fn set_parity_mode(&mut self, parity_mode: ParityMode) {
+    pub fn set_parity_mode(mut self, parity_mode: ParityMode) -> Self {
         self.parity_mode = parity_mode;
+        self
     }
 
     /// Sets the number of stop bits.
-    pub fn set_stop_bits(&mut self, stop_bits: StopBits) {
+    pub fn set_stop_bits(mut self, stop_bits: StopBits) -> Self {
         self.stop_bits = stop_bits;
+        self
     }
 
     /// Sets the word length.
-    pub fn set_word_length(&mut self, word_length: WordLength) {
+    pub fn set_word_length(mut self, word_length: WordLength) -> Self {
         self.word_length = word_length;
+        self
     }
 }
 

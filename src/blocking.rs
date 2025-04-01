@@ -5,9 +5,9 @@ use crate::{
     Config, RbrThrDll, divisor, parity_mode, read_ready, set_divisor, set_parity_mode,
     set_stop_bits, set_word_length, stop_bits, word_length, write_ready,
 };
+use core::ops::Deref;
 use embedded_hal_nb::nb;
 use embedded_io::ErrorType;
-use core::ops::Deref;
 
 /// Reads data from UART in a blocking manner.
 ///
@@ -51,7 +51,7 @@ fn blocking_write(uart: &RegisterBlock, buf: &[u8]) -> usize {
 /// Flushes the UART transmitter by waiting until all data has been sent.
 ///
 /// This function blocks until the transmitter is completely empty.
-fn blocking_flash(uart: &RegisterBlock) {
+fn blocking_flush(uart: &RegisterBlock) {
     while !uart.lsr.read().is_transmitter_empty() {
         core::hint::spin_loop();
     }
@@ -69,13 +69,30 @@ impl<UART: Deref<Target = RegisterBlock>> BlockingUart<UART> {
     ///
     /// This function initializes the UART with the provided configuration parameters.
     /// Returns a new BlockingUart instance.
-    pub fn new(uart: UART, config: Config) -> Self {
-        if let Some(divisor) = config.divisor {
-            set_divisor(&uart, divisor);
-        }
+    pub fn new(uart: UART, config: Config, enable_fifo: bool) -> Self {
+        set_divisor(&uart, config.divisor);
         set_parity_mode(&uart, config.parity_mode);
         set_stop_bits(&uart, config.stop_bits);
         set_word_length(&uart, config.word_length);
+
+        let fcr = match enable_fifo {
+            true => uart.iir_fcr.read().enable_fifo(),
+            false => uart.iir_fcr.read().disable_fifo(),
+        };
+        unsafe {
+            uart.iir_fcr.write(fcr);
+        }
+
+        let ier = uart
+            .ier_dlh
+            .read()
+            .disable_modem_status_interrupt()
+            .disable_receiver_line_status_interrupt()
+            .disable_received_data_available_interrupt()
+            .disable_transmitter_empty_interrupt();
+        unsafe {
+            uart.ier_dlh.write(ier);
+        }
 
         BlockingUart { uart }
     }
@@ -83,11 +100,11 @@ impl<UART: Deref<Target = RegisterBlock>> BlockingUart<UART> {
     /// Returns the current configuration of the UART.
     ///
     /// This function reads all configuration parameters from the UART registers and returns them as a Config struct.
-    pub fn config(&self) -> Config {
-        let divisor = Some(divisor(&self.uart));
-        let parity_mode = parity_mode(&self.uart);
-        let stop_bits = stop_bits(&self.uart);
-        let word_length = word_length(&self.uart);
+    pub fn config(uart: UART) -> Config {
+        let divisor = divisor(&uart);
+        let parity_mode = parity_mode(&uart);
+        let stop_bits = stop_bits(&uart);
+        let word_length = word_length(&uart);
         Config {
             divisor,
             parity_mode,
@@ -113,8 +130,8 @@ impl<UART: Deref<Target = RegisterBlock>> BlockingUart<UART> {
     /// Flushes the UART transmitter.
     ///
     /// This function ensures all data has been transmitted before returning.
-    pub fn flash(&self) {
-        blocking_flash(&self.uart)
+    pub fn flush(&self) {
+        blocking_flush(&self.uart)
     }
 }
 
@@ -134,7 +151,7 @@ impl<UART: Deref<Target = RegisterBlock>> embedded_io::Write for BlockingUart<UA
     }
 
     fn flush(&mut self) -> Result<(), Self::Error> {
-        blocking_flash(&self.uart);
+        blocking_flush(&self.uart);
         Ok(())
     }
 }
